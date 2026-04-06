@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amorómetro — La verdad que no quieres oír</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --rojo: #D62839;
+    --rosa: #FF6B9D;
+    --rosita: #FFE0EC;
+    --crema: #FFF8F2;
+    --negro: #1C1C2E;
+    --gris: #6B6B7B;
+    --dorado: #F4A261;
+    --verde: #2A9D8F;
+    --naranja: #E76F51;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--crema);
+    color: var(--negro);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(214,40,57,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+
+  /* ===== INTRO ===== */
+  #intro { text-align: center; }
+
+  .logo-icon { width: 72px; height: 72px; margin: 0 auto 20px; animation: pulse 2s ease-in-out infinite; }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  .app-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 8vw, 3.6rem);
+    font-weight: 900;
+    color: var(--rojo);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .app-subtitle {
+    font-size: 0.85rem;
+    color: var(--gris);
+    margin-top: 6px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .intro-tagline {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.05rem, 3.5vw, 1.25rem);
+    color: var(--negro);
+    margin: 28px auto;
+    max-width: 340px;
+    line-height: 1.55;
+  }
+
+  .intro-tagline span { color: var(--rojo); }
+
+  .intro-disclaimer {
+    background: var(--rosita);
+    border-left: 3px solid var(--rosa);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 0.84rem;
+    color: var(--gris);
+    max-width: 360px;
+    margin: 0 auto 32px;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .btn-primary {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 48px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(214,40,57,0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(214,40,57,0.4); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gris);
+    border: 1.5px solid #DDD;
+    border-radius: 50px;
+    padding: 13px 36px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .btn-secondary:hover { border-color: var(--rosa); color: var(--rosa); }
+
+  /* ===== QUIZ ===== */
+  #quiz { padding: 24px 20px 48px; justify-content: flex-start; }
+
+  .quiz-header { width: 100%; max-width: 480px; margin-bottom: 24px; text-align: center; }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--gris);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+  }
+
+  .progress-bar-wrap { background: #EEE; border-radius: 50px; height: 5px; overflow: hidden; }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rosa), var(--rojo));
+    border-radius: 50px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    background: white;
+    border-radius: 20px;
+    padding: 26px 22px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+    animation: slideIn 0.35s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .q-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--rosa);
+    margin-bottom: 12px;
+  }
+
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 3.5vw, 1.18rem);
+    font-weight: 700;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    color: var(--negro);
+  }
+
+  .q-humor {
+    font-size: 0.8rem;
+    color: var(--gris);
+    font-style: italic;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .options-grid { display: flex; flex-direction: column; gap: 9px; }
+
+  .option-btn {
+    background: var(--crema);
+    border: 1.5px solid #EEEEEE;
+    border-radius: 12px;
+    padding: 13px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    color: var(--negro);
+    transition: all 0.18s;
+    line-height: 1.35;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .option-btn:hover { border-color: var(--rosa); background: var(--rosita); transform: translateX(3px); }
+  .option-btn.selected { border-color: var(--rojo); background: var(--rosita); font-weight: 500; }
+
+  .option-letter {
+    min-width: 25px; height: 25px;
+    background: white;
+    border: 1.5px solid #DDD;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--gris);
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+
+  .option-btn.selected .option-letter { background: var(--rojo); border-color: var(--rojo); color: white; }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .btn-back {
+    background: none; border: none;
+    color: var(--gris);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 0;
+  }
+
+  .btn-next {
+    background: var(--negro);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.35;
+    pointer-events: none;
+    display: flex; align-items: center; gap: 7px;
+  }
+
+  .btn-next.ready { opacity: 1; pointer-events: all; }
+  .btn-next.ready:hover { background: var(--rojo); }
+
+  /* ===== RESULTADO ===== */
+  #resultado { padding: 28px 20px 52px; justify-content: flex-start; }
+
+  .result-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px 22px 26px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .result-card.nivel-a::before { background: linear-gradient(90deg, #2A9D8F, #52b788); }
+  .result-card.nivel-b::before { background: linear-gradient(90deg, #F4A261, #f9c74f); }
+  .result-card.nivel-c::before { background: linear-gradient(90deg, #E76F51, #f4a261); }
+  .result-card.nivel-d::before { background: linear-gradient(90deg, #D62839, #FF6B9D); }
+
+  .result-icon-wrap { text-align: center; margin-bottom: 14px; animation: bounceIn 0.6s ease; }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .result-nivel {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gris);
+    margin-bottom: 7px;
+  }
+
+  .result-titulo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 5vw, 1.9rem);
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 5px;
+  }
+
+  .result-subtitulo {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--gris);
+    font-style: italic;
+    margin-bottom: 20px;
+  }
+
+  .result-gauge { background: #F0F0F0; border-radius: 50px; height: 9px; overflow: hidden; margin-bottom: 7px; }
+
+  .result-gauge-fill { height: 100%; border-radius: 50px; width: 0%; transition: width 1.2s ease; }
+
+  .gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: #AAA;
+    margin-bottom: 20px;
+  }
+
+  .result-desc { font-size: 0.91rem; line-height: 1.65; color: #444; margin-bottom: 18px; }
+
+  .result-truth {
+    background: #FFF5F7;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 16px;
+  }
+
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-label.rosa { color: var(--rosa); }
+  .section-label.verde { color: var(--verde); }
+
+  .result-truth p, .result-autoestima p { font-size: 0.87rem; line-height: 1.62; color: var(--negro); }
+
+  .result-autoestima {
+    background: linear-gradient(135deg, #f0faf8, #e6f5f2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 18px;
+    border-left: 3px solid var(--verde);
+  }
+
+  .cta-psicologa {
+    background: var(--negro);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .cta-psicologa p { color: #BBB; font-size: 0.82rem; margin-bottom: 12px; line-height: 1.55; }
+  .cta-psicologa strong { color: white; }
+
+  .btn-cita {
+    background: var(--rosa);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 11px 26px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .btn-cita:hover { background: var(--rojo); transform: scale(1.03); }
+
+  .share-section { display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-share {
+    background: linear-gradient(135deg, var(--rosa), var(--rojo));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    box-shadow: 0 4px 20px rgba(214,40,57,0.22);
+    width: 100%;
+  }
+
+  .btn-share:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(214,40,57,0.35); }
+
+  .btn-retry {
+    background: white;
+    color: var(--gris);
+    border: 1.5px solid #DDD;
+    border-radius: 50px;
+    padding: 12px 22px;
+    font-size: 0.87rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+  }
+
+  .btn-retry:hover { border-color: var(--gris); color: var(--negro); }
+
+  /* ===== SHARE CARD (hidden, for screenshot) ===== */
+  #share-card {
+    position: fixed;
+    left: -9999px; top: 0;
+    width: 520px;
+    background: #FFF8F2;
+    padding: 32px 28px 28px;
+    font-family: 'DM Sans', sans-serif;
+    z-index: -1;
+  }
+
+  .sc-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1.5px solid #EEE;
+  }
+
+  .sc-logo-text { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.4rem; color: var(--rojo); }
+  .sc-logo-sub { font-size: 0.65rem; color: var(--gris); text-transform: uppercase; letter-spacing: 1.2px; }
+
+  /* Inner white card */
+  .sc-inner {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 20px 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  }
+
+  .sc-inner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .sc-inner.nivel-a::before { background: linear-gradient(90deg, #2A9D8F, #52b788); }
+  .sc-inner.nivel-b::before { background: linear-gradient(90deg, #F4A261, #f9c74f); }
+  .sc-inner.nivel-c::before { background: linear-gradient(90deg, #E76F51, #f4a261); }
+  .sc-inner.nivel-d::before { background: linear-gradient(90deg, #D62839, #FF6B9D); }
+
+  .sc-result-icon { text-align: center; margin-bottom: 10px; }
+  .sc-nivel { text-align: center; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--gris); margin-bottom: 6px; }
+  .sc-titulo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; text-align: center; margin-bottom: 4px; }
+  .sc-subtitulo { text-align: center; font-size: 0.82rem; color: var(--gris); font-style: italic; margin-bottom: 16px; }
+
+  .sc-gauge { background: #F0F0F0; border-radius: 50px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+  .sc-gauge-fill { height: 100%; border-radius: 50px; }
+  .sc-gauge-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: #AAA; margin-bottom: 16px; }
+
+  .sc-desc { font-size: 0.86rem; line-height: 1.62; color: #444; margin-bottom: 14px; }
+
+  .sc-block {
+    border-radius: 10px;
+    padding: 13px 14px;
+    margin-bottom: 12px;
+  }
+
+  .sc-block-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .sc-block-title.rosa { color: var(--rosa); }
+  .sc-block-title.verde { color: var(--verde); }
+
+  .sc-block.truth { background: #FFF5F7; }
+  .sc-block.autoestima { background: linear-gradient(135deg, #f0faf8, #e6f5f2); border-left: 3px solid var(--verde); }
+
+  .sc-block p { font-size: 0.83rem; line-height: 1.58; color: var(--negro); }
+
+  .sc-cta {
+    background: var(--negro);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .sc-cta p { color: #BBB; font-size: 0.78rem; margin-bottom: 8px; line-height: 1.5; }
+  .sc-cta strong { color: white; }
+
+  .sc-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rosa);
+    color: white;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .sc-watermark {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1.5px solid #EEE;
+    margin-top: 4px;
+  }
+
+  .sc-wm-label { font-size: 0.72rem; color: var(--gris); }
+  .sc-wm-handle { font-size: 0.9rem; font-weight: 700; color: var(--rojo); margin-top: 2px; }
+  .sc-wm-right { font-size: 0.68rem; color: #BBB; text-align: right; line-height: 1.4; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--negro);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .brand-footer { text-align: center; margin-top: 24px; font-size: 0.76rem; color: #BBB; }
+  .brand-footer strong { color: var(--rosa); }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S3Z4ETQXCZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S3Z4ETQXCZ');
+</script>
+</head>
+<body>
+
+<!-- ===== INTRO ===== -->
+<div class="screen active" id="intro">
+  <svg class="logo-icon" viewBox="0 0 72 72" fill="none">
+    <circle cx="36" cy="36" r="34" fill="#FFF0F3" stroke="#D62839" stroke-width="1.5"/>
+    <path d="M36 52C36 52 18 40 18 28C18 22 22.5 17 28 17C31.5 17 34.5 19 36 22C37.5 19 40.5 17 44 17C49.5 17 54 22 54 28C54 40 36 52 36 52Z" fill="#D62839"/>
+    <path d="M36 46C36 46 22 37 22 28C22 24 24.5 21 28 21C30.5 21 33 22.5 34.5 25L36 27.5L37.5 25C39 22.5 41.5 21 44 21C47.5 21 50 24 50 28C50 37 36 46 36 46Z" fill="#FF6B9D" opacity="0.45"/>
+    <circle cx="51" cy="51" r="9" fill="white" stroke="#D62839" stroke-width="1.8"/>
+    <circle cx="51" cy="51" r="4.5" fill="none" stroke="#D62839" stroke-width="1.5"/>
+    <line x1="55" y1="55" x2="60" y2="60" stroke="#D62839" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+
+  <h1 class="app-title">Amorómetro</h1>
+  <p class="app-subtitle">El detector que necesitabas</p>
+
+  <p class="intro-tagline">
+    ¿Él te ama de verdad o solo <span>te tiene de plan B</span> mientras aparece algo mejor?
+  </p>
+
+  <div class="intro-disclaimer">
+    <strong>Advertencia seria:</strong> Este test está basado en investigaciones reales de Gottman, Chapman y teoría del apego. Los resultados pueden doler un poco. Pero mejor saberlo que seguir esperando otros 3 años.
+  </div>
+
+  <button class="btn-primary" onclick="startQuiz()">Quiero saber la verdad</button>
+  <button class="btn-secondary" onclick="startQuiz()">Aunque me duela</button>
+
+  <div class="brand-footer">Creado por <strong>@SoyPsicoCarol</strong></div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <div class="progress-label" id="progress-label">Pregunta 1 de 10</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar" style="width:10%"></div>
+    </div>
+  </div>
+
+  <div class="question-card" id="question-card">
+    <div class="q-category" id="q-category"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="q-humor" id="q-humor"></div>
+    <div class="options-grid" id="options-grid"></div>
+  </div>
+
+  <div class="quiz-nav">
+    <button class="btn-back" id="btn-back" onclick="prevQuestion()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Atrás
+    </button>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">
+      Siguiente
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===== RESULTADO ===== -->
+<div class="screen" id="resultado">
+  <div class="result-card" id="result-card">
+    <div class="result-icon-wrap" id="result-icon"></div>
+    <div class="result-nivel" id="result-nivel"></div>
+    <div class="result-titulo" id="result-titulo"></div>
+    <div class="result-subtitulo" id="result-subtitulo"></div>
+
+    <div class="result-gauge">
+      <div class="result-gauge-fill" id="result-gauge-fill"></div>
+    </div>
+    <div class="gauge-labels">
+      <span>Necesitas hablar</span>
+      <span>Todo bien</span>
+    </div>
+
+    <div class="result-desc" id="result-desc"></div>
+
+    <div class="result-truth">
+      <div class="section-label rosa">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Lo que el test encontró
+      </div>
+      <p id="result-truth-text"></p>
+    </div>
+
+    <div class="result-autoestima">
+      <div class="section-label verde">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Para tu autoestima
+      </div>
+      <p id="result-autoestima-text"></p>
+    </div>
+
+    <div class="cta-psicologa">
+      <p id="cta-text"></p>
+      <button class="btn-cita" onclick="agendarCita()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agendar con @SoyPsicoCarol
+      </button>
+    </div>
+
+    <div class="share-section">
+      <button class="btn-share" onclick="compartirResultado()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartir mi resultado
+      </button>
+      <button class="btn-retry" onclick="reiniciar()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Volver a empezar
+      </button>
+    </div>
+  </div>
+
+  <div class="brand-footer">
+    <strong>@SoyPsicoCarol</strong> · Psicología con verdad y sin filtros
+  </div>
+</div>
+
+<!-- SHARE CARD oculta - captura completa -->
+<div id="share-card">
+  <div class="sc-header">
+    <svg width="36" height="36" viewBox="0 0 72 72" fill="none">
+      <circle cx="36" cy="36" r="34" fill="#FFF0F3" stroke="#D62839" stroke-width="1.5"/>
+      <path d="M36 52C36 52 18 40 18 28C18 22 22.5 17 28 17C31.5 17 34.5 19 36 22C37.5 19 40.5 17 44 17C49.5 17 54 22 54 28C54 40 36 52 36 52Z" fill="#D62839"/>
+    </svg>
+    <div>
+      <div class="sc-logo-text">Amorómetro</div>
+      <div class="sc-logo-sub">El detector que necesitabas</div>
+    </div>
+  </div>
+
+  <div class="sc-inner" id="sc-inner">
+    <div class="sc-result-icon" id="sc-icon"></div>
+    <div class="sc-nivel" id="sc-nivel"></div>
+    <div class="sc-titulo" id="sc-titulo"></div>
+    <div class="sc-subtitulo" id="sc-subtitulo"></div>
+
+    <div class="sc-gauge"><div class="sc-gauge-fill" id="sc-gauge-fill"></div></div>
+    <div class="sc-gauge-labels"><span>Necesitas hablar</span><span>Todo bien</span></div>
+
+    <div class="sc-desc" id="sc-desc"></div>
+
+    <div class="sc-block truth">
+      <div class="sc-block-title rosa">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Lo que el test encontró
+      </div>
+      <p id="sc-truth"></p>
+    </div>
+
+    <div class="sc-block autoestima">
+      <div class="sc-block-title verde">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Para tu autoestima
+      </div>
+      <p id="sc-autoestima"></p>
+    </div>
+
+    <div class="sc-cta">
+      <p id="sc-cta-text"></p>
+      <div class="sc-cta-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agendar con @SoyPsicoCarol
+      </div>
+    </div>
+  </div>
+
+  <div class="sc-watermark">
+    <div>
+      <div class="sc-wm-label">Mi resultado en el Amorómetro</div>
+      <div class="sc-wm-handle">@SoyPsicoCarol</div>
+    </div>
+    <div class="sc-wm-right">Psicología con verdad<br>y sin filtros</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const preguntas = [
+  {
+    categoria: "Comunicación",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    texto: "¿Quién inicia la mayoría de las conversaciones?",
+    humor: "(Cuenta los últimos 10 días, no los buenos tiempos de hace 2 años.)",
+    opciones: [
+      { texto: "Él me escribe primero, siempre o casi siempre", puntos: 4 },
+      { texto: "Más o menos igual entre los dos", puntos: 3 },
+      { texto: "Yo, pero él responde bien", puntos: 2 },
+      { texto: "Yo siempre. Si no escribo, silencio total", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Planes de futuro",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    texto: "Cuando hablan del futuro, ¿cómo habla él?",
+    humor: "(\"Ya veremos\" no es un plan, es una excusa con cara de plan.)",
+    opciones: [
+      { texto: "Con fechas, nombres y detalles concretos", puntos: 4 },
+      { texto: "Con entusiasmo pero sin fechas todavía", puntos: 3 },
+      { texto: "De vez en cuando, solo si yo lo traigo", puntos: 1 },
+      { texto: "\"Ya veremos\" es su frase favorita", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Presencia emocional",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    texto: "Cuando tienes un mal día, ¿qué hace él?",
+    humor: "(\"Tranquila\" sin preguntar qué pasó no cuenta como apoyo emocional.)",
+    opciones: [
+      { texto: "Pregunta, escucha y está presente aunque sea por mensajes", puntos: 4 },
+      { texto: "Me escucha pero no profundiza mucho", puntos: 3 },
+      { texto: "Me dice que me calme y cambia el tema", puntos: 1 },
+      { texto: "Ni se entera porque nunca pregunta cómo estoy", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Los 4 Jinetes · Gottman",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    texto: "Cuando hay una discusión, ¿cómo reacciona él?",
+    humor: "(El silencio punitivo y el desprecio no son \"su forma de ser\", son señales de alerta.)",
+    opciones: [
+      { texto: "Habla, escucha y busca soluciones juntos", puntos: 4 },
+      { texto: "Se defiende pero sin atacarme", puntos: 3 },
+      { texto: "Se cierra totalmente o me ignora días", puntos: 1 },
+      { texto: "Me critica, me menosprecia o hace comentarios crueles", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Lenguaje del amor · Chapman",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+    texto: "¿Él expresa que te quiere de alguna forma concreta?",
+    humor: "(\"Te quiero\" dicho mientras scrollea TikTok no aplica.)",
+    opciones: [
+      { texto: "Sí, con palabras, detalles, tiempo o actos de servicio", puntos: 4 },
+      { texto: "A veces, pero se nota que lo intenta", puntos: 3 },
+      { texto: "Raramente y solo cuando yo lo hago primero", puntos: 1 },
+      { texto: "No recuerdo la última vez que lo hizo espontáneamente", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Reciprocidad",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
+    texto: "¿Sientes que el esfuerzo en la relación es equilibrado?",
+    humor: "(Si estás leyendo esto a las 11pm con el corazón apretado, ya tienes parte de la respuesta.)",
+    opciones: [
+      { texto: "Sí, los dos ponemos lo que podemos", puntos: 4 },
+      { texto: "Él pone menos pero se nota que quiere mejorar", puntos: 2 },
+      { texto: "Yo pongo el 80% y él el 20%", puntos: 1 },
+      { texto: "Yo pongo todo. Él solo recibe", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Seguridad · Teoría del apego",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    texto: "¿Cómo te sientes cuando no sabes nada de él por horas?",
+    humor: "(La ansiedad que sientes no siempre es amor intenso. A veces es inseguridad que él produce.)",
+    opciones: [
+      { texto: "Tranquila, sé que está ocupado y escribirá", puntos: 4 },
+      { texto: "Un poco ansiosa pero manejable", puntos: 3 },
+      { texto: "Muy ansiosa, reviso el teléfono sin parar", puntos: 1 },
+      { texto: "En pánico total. Ya creé 5 escenarios en mi cabeza", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Acciones concretas",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+    texto: "En los últimos 3 meses, ¿él ha hecho algo concreto por la relación?",
+    humor: "(\"Pensar en ti\" no es una acción concreta. Tampoco es \"querer hacerlo\".)",
+    opciones: [
+      { texto: "Sí, ha tomado decisiones o pasos visibles", puntos: 4 },
+      { texto: "Pequeñas cosas, pero se nota el intento", puntos: 3 },
+      { texto: "Palabras bonitas pero nada concreto", puntos: 1 },
+      { texto: "Cero. Las mismas promesas de siempre", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Tu intuición",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    texto: "Cuando eres honesta contigo misma, ¿qué sientes?",
+    humor: "(Tu intuición sabe más que tu amor por él. Escúchala.)",
+    opciones: [
+      { texto: "Que estamos bien y esto va para adelante", puntos: 4 },
+      { texto: "Que hay obstáculos pero hay voluntad de ambos", puntos: 3 },
+      { texto: "Que yo quiero más que él", puntos: 1 },
+      { texto: "Que estoy esperando algo que quizás no llegará", puntos: 0 }
+    ]
+  },
+  {
+    categoria: "Tu bienestar",
+    icono: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    texto: "¿Esta relación te hace sentir segura y valorada?",
+    humor: "(\"A veces\" no es suficiente cuando hablamos de la persona con quien quieres construir tu vida.)",
+    opciones: [
+      { texto: "Sí, me siento amada, vista y tranquila", puntos: 4 },
+      { texto: "La mayoría del tiempo sí", puntos: 3 },
+      { texto: "Pocas veces. Hay mucha incertidumbre", puntos: 1 },
+      { texto: "No. Me siento invisible y emocionalmente agotada", puntos: 0 }
+    ]
+  }
+];
+
+const niveles = [
+  {
+    min: 30, max: 40,
+    nivel: "NIVEL A · AMOR REAL",
+    titulo: "Él sí te ama",
+    subtitulo: "Y lo demuestra con hechos, no solo palabras",
+    color: "#2A9D8F",
+    gaugeColor: "linear-gradient(90deg, #2A9D8F, #52b788)",
+    gaugeWidth: "90%",
+    icon: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#E8F5F3" stroke="#2A9D8F" stroke-width="1.5"/><path d="M32 48C32 48 14 36 14 24C14 18 18.5 13 24 13C27.5 13 30.5 15 32 18C33.5 15 36.5 13 40 13C45.5 13 50 18 50 24C50 36 32 48 32 48Z" fill="#2A9D8F"/></svg>`,
+    desc: "El Amorómetro detectó señales sólidas de amor real y recíproco. Hay comunicación, esfuerzo, presencia emocional y coherencia entre lo que él dice y lo que hace. Eso no es común, y vale la pena cuidarlo.",
+    truth: "Tu relación tiene bases sólidas según los indicadores de Gottman. Las parejas que se eligen con acciones y no solo palabras son las que tienen futuro real.",
+    autoestima: "Estás en una relación que te nutre y eso dice mucho de lo que crees que mereces. Sigue eligiendo desde ese lugar de consciencia y no desde el miedo o la costumbre.",
+    cta: "<strong>¿Quieres fortalecer aún más lo que tienen?</strong> Una sesión puede ayudarte a comunicarte mejor, establecer límites sanos y seguir construyendo desde un lugar seguro.",
+    shareMsg: "Mi relación tiene bases reales y sólidas. Lo dice la ciencia y mi intuición también."
+  },
+  {
+    min: 20, max: 29,
+    nivel: "NIVEL B · AMOR CON BACHES",
+    titulo: "Te ama, pero hay trabajo",
+    subtitulo: "El amor está. La coherencia, todavía no del todo",
+    color: "#C5821A",
+    gaugeColor: "linear-gradient(90deg, #F4A261, #f9c74f)",
+    gaugeWidth: "62%",
+    icon: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#FFF5E8" stroke="#F4A261" stroke-width="1.5"/><path d="M32 48C32 48 14 36 14 24C14 18 18.5 13 24 13C27.5 13 30.5 15 32 18C33.5 15 36.5 13 40 13C45.5 13 50 18 50 24C50 36 32 48 32 48Z" fill="#F4A261" opacity="0.65"/></svg>`,
+    desc: "Hay sentimientos genuinos, pero también inconsistencias que no puedes ignorar. El amor sin coherencia en las acciones genera exactamente lo que estás sintiendo: confusión, dudas y agotamiento emocional.",
+    truth: "Gottman encontró que las relaciones que sobreviven no son las que no tienen conflictos, sino las que ambos quieren resolver. La pregunta clave es: ¿los dos están dispuestos?",
+    autoestima: "Mereces una relación donde no tengas que adivinar si eres importante. El amor no debería ser un rompecabezas de señales mixtas. Tu claridad interna es un activo, no una debilidad.",
+    cta: "<strong>Este es el momento de hablar con alguien que te ayude a ver con claridad.</strong> No para decidir por ti, sino para que tomes la mejor decisión desde un lugar consciente y seguro.",
+    shareMsg: "Hay amor pero también hay trabajo por hacer. El Amorómetro me ayudó a verlo con claridad."
+  },
+  {
+    min: 10, max: 19,
+    nivel: "NIVEL C · AMOR EN DUDA",
+    titulo: "Houston, tenemos un problema",
+    subtitulo: "Lo que sientes es real. Lo que recibes, no tanto",
+    color: "#C4511A",
+    gaugeColor: "linear-gradient(90deg, #E76F51, #f4a261)",
+    gaugeWidth: "32%",
+    icon: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#FFF2EE" stroke="#E76F51" stroke-width="1.5"/><path d="M32 48C32 48 14 36 14 24C14 18 18.5 13 24 13C27.5 13 30.5 15 32 18C33.5 15 36.5 13 40 13C45.5 13 50 18 50 24C50 36 32 48 32 48Z" fill="#E76F51" opacity="0.35"/><line x1="23" y1="39" x2="41" y2="39" stroke="#E76F51" stroke-width="2" stroke-linecap="round"/></svg>`,
+    desc: "El Amorómetro detectó un desequilibrio importante. Estás dando más de lo que recibes, esperando más de lo que llega y posiblemente justificando cosas que en el fondo ya sabes que no están bien.",
+    truth: "La teoría del apego de Levine explica que una persona puede amarte genuinamente y aún así ser incapaz de darte lo que necesitas. El problema no eres tú, es la dinámica.",
+    autoestima: "Esto no significa que no mereces amor. Significa que mereces uno que se parezca a lo que tú das. Quedarte donde no eres prioridad no es lealtad, es un costo que tú sola estás pagando.",
+    cta: "<strong>Llegó el momento de hablar con alguien.</strong> No porque estés 'loca', sino porque mereces claridad y un espacio seguro donde procesar esto sin juicio ni presión.",
+    shareMsg: "El Amorómetro me dijo lo que ya sabía pero no quería ver. Es hora de ser honesta conmigo misma."
+  },
+  {
+    min: 0, max: 9,
+    nivel: "NIVEL D · AMOR PROPIO PRIMERO",
+    titulo: "Él no está. Tú sí.",
+    subtitulo: "Y eso lo dice todo",
+    color: "#D62839",
+    gaugeColor: "linear-gradient(90deg, #D62839, #FF6B9D)",
+    gaugeWidth: "10%",
+    icon: `<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#FFF0F3" stroke="#D62839" stroke-width="1.5"/><path d="M32 48C32 48 14 36 14 24C14 18 18.5 13 24 13C27.5 13 30.5 15 32 18C33.5 15 36.5 13 40 13C45.5 13 50 18 50 24C50 36 32 48 32 48Z" fill="#D62839" opacity="0.2"/><line x1="22" y1="22" x2="42" y2="42" stroke="#D62839" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="22" x2="22" y2="42" stroke="#D62839" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    desc: "El Amorómetro no miente: las señales apuntan a una relación donde tú llevas la mayor carga emocional, donde las acciones no acompañan las palabras y donde tu bienestar está siendo afectado.",
+    truth: "Gottman identificó que cuando hay indiferencia y falta de reciprocidad constante, la relación tiene un pronóstico muy difícil sin intervención real de ambas partes. No de una sola.",
+    autoestima: "Esto no te define como persona. Significa que en algún momento priorizaste quedarte sobre escucharte. Eso se trabaja. No eres lo que aceptas hoy, eres lo que decides de aquí en adelante.",
+    cta: "<strong>No tienes que procesar esto sola.</strong> Hablar con una psicóloga no es un lujo, es el acto más valiente de amor propio que puedes hacer ahora mismo.",
+    shareMsg: "El Amorómetro me dijo la verdad. A veces necesitamos que alguien nos la diga con claridad para empezar a elegirnos a nosotras mismas."
+  }
+];
+
+let currentQ = 0;
+let respuestas = [];
+let nivelActual = null;
+
+function startQuiz() {
+  document.getElementById('intro').classList.remove('active');
+  document.getElementById('quiz').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = preguntas[currentQ];
+  document.getElementById('progress-label').textContent = `Pregunta ${currentQ + 1} de ${preguntas.length}`;
+  document.getElementById('progress-bar').style.width = `${((currentQ + 1) / preguntas.length) * 100}%`;
+  document.getElementById('q-category').innerHTML = q.icono + ' ' + q.categoria;
+  document.getElementById('q-text').textContent = q.texto;
+  document.getElementById('q-humor').textContent = q.humor;
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  ['A','B','C','D'].forEach((letra, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (respuestas[currentQ] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="option-letter">${letra}</span>${q.opciones[i].texto}`;
+    btn.onclick = () => selectOption(i, btn);
+    grid.appendChild(btn);
+  });
+
+  actualizarBtnNext();
+  document.getElementById('btn-back').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = ''; });
+}
+
+function selectOption(index, btnEl) {
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  respuestas[currentQ] = index;
+  actualizarBtnNext();
+}
+
+function actualizarBtnNext() {
+  const btn = document.getElementById('btn-next');
+  const isLast = currentQ === preguntas.length - 1;
+  btn.innerHTML = isLast
+    ? 'Ver mi resultado <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+    : 'Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  btn.classList.toggle('ready', respuestas[currentQ] !== undefined);
+}
+
+function nextQuestion() {
+  if (respuestas[currentQ] === undefined) return;
+  if (currentQ < preguntas.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    calcularResultado();
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function calcularResultado() {
+  let puntos = 0;
+  respuestas.forEach((r, i) => { puntos += preguntas[i].opciones[r].puntos; });
+  nivelActual = niveles.find(n => puntos >= n.min && puntos <= n.max);
+
+  document.getElementById('quiz').classList.remove('active');
+  document.getElementById('resultado').classList.add('active');
+
+  const card = document.getElementById('result-card');
+  card.className = 'result-card';
+  if (puntos >= 30) card.classList.add('nivel-a');
+  else if (puntos >= 20) card.classList.add('nivel-b');
+  else if (puntos >= 10) card.classList.add('nivel-c');
+  else card.classList.add('nivel-d');
+
+  document.getElementById('result-icon').innerHTML = nivelActual.icon;
+  document.getElementById('result-nivel').textContent = nivelActual.nivel;
+  document.getElementById('result-titulo').textContent = nivelActual.titulo;
+  document.getElementById('result-titulo').style.color = nivelActual.color;
+  document.getElementById('result-subtitulo').textContent = nivelActual.subtitulo;
+  document.getElementById('result-desc').textContent = nivelActual.desc;
+  document.getElementById('result-truth-text').textContent = nivelActual.truth;
+  document.getElementById('result-autoestima-text').textContent = nivelActual.autoestima;
+  document.getElementById('cta-text').innerHTML = nivelActual.cta;
+
+  const fill = document.getElementById('result-gauge-fill');
+  fill.style.background = nivelActual.gaugeColor;
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.transition = 'width 1.2s ease'; fill.style.width = nivelActual.gaugeWidth; }, 250);
+
+  // Prep share card - full content
+  document.getElementById('sc-inner').className = 'sc-inner ' + card.classList[1];
+  document.getElementById('sc-icon').innerHTML = nivelActual.icon;
+  document.getElementById('sc-nivel').textContent = nivelActual.nivel;
+  document.getElementById('sc-titulo').textContent = nivelActual.titulo;
+  document.getElementById('sc-titulo').style.color = nivelActual.color;
+  document.getElementById('sc-subtitulo').textContent = nivelActual.subtitulo;
+  const scFill = document.getElementById('sc-gauge-fill');
+  scFill.style.background = nivelActual.gaugeColor;
+  scFill.style.width = nivelActual.gaugeWidth;
+  document.getElementById('sc-desc').textContent = nivelActual.desc;
+  document.getElementById('sc-truth').textContent = nivelActual.truth;
+  document.getElementById('sc-autoestima').textContent = nivelActual.autoestima;
+  // Strip HTML tags for share card CTA
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = nivelActual.cta;
+  document.getElementById('sc-cta-text').textContent = tempDiv.textContent;
+}
+
+function agendarCita() {
+  showToast("Buscando @SoyPsicoCarol...");
+  setTimeout(() => window.open('https://instagram.com/SoyPsicoCarol', '_blank'), 600);
+}
+
+async function compartirResultado() {
+  showToast("Preparando tu imagen...");
+  try {
+    const shareCard = document.getElementById('share-card');
+    // Bring card into viewport for html2canvas
+    shareCard.style.left = '0';
+    shareCard.style.top = '0';
+    shareCard.style.zIndex = '9999';
+    await new Promise(r => setTimeout(r, 500));
+
+    const canvas = await html2canvas(shareCard, {
+      scale: 2,
+      backgroundColor: '#FFF8F2',
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: shareCard.scrollWidth,
+      windowHeight: shareCard.scrollHeight
+    });
+
+    shareCard.style.left = '-9999px';
+    shareCard.style.top = '0';
+    shareCard.style.zIndex = '-1';
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) { showToast("No se pudo generar la imagen"); return; }
+      const file = new File([blob], 'amorometro.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: 'Mi resultado · Amorómetro', text: nivelActual.titulo + ' · @SoyPsicoCarol', files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'amorometro-resultado.png'; a.click();
+        URL.revokeObjectURL(url);
+        showToast("Imagen descargada. Compártela en tus redes.");
+      }
+    }, 'image/png');
+  } catch (e) {
+    console.error(e);
+    showToast("Toma un screenshot y compártelo");
+  }
+}
+
+function reiniciar() {
+  currentQ = 0; respuestas = []; nivelActual = null;
+  document.getElementById('resultado').classList.remove('active');
+  document.getElementById('intro').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
